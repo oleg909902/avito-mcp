@@ -7,6 +7,13 @@ Requests to Avito run inside an avito.ru tab of an already running Chrome (via t
 so they use the browser's session, cookies and proxy. Pages are parsed right in the browser, the messenger is Avito's
 JSON-RPC over the `socket.avito.ru` WebSocket opened from the same tab. Cookies are never extracted from the browser.
 
+## Example
+
+ChatGPT with avito-mcp connected: "find RTX 5060 listings in my city" — the model picks the video cards category,
+applies the "used" filter, sorts by price in the default city and checks the sellers.
+
+![Example: searching for a used RTX 5060 in ChatGPT](docs/example-chatgpt.png)
+
 ## Tools
 
 | Tool | What it does |
