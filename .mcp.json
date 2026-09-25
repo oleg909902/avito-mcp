@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "avito": {
+      "command": "node",
+      "args": ["dist/index.js", "--stdio"],
+      "env": { "CDP_URL": "http://127.0.0.1:9223", "AVITO_REGION": "krasnodar" }
+    }
+  }
+}
