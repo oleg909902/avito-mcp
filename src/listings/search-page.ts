@@ -27,6 +27,14 @@ export function parseSearchPage(doc: Document): SearchPage {
   const biggest = (srcset: string | null | undefined) =>
     srcset?.split(",").map((s) => s.trim().split(" ")[0]).filter(Boolean).at(-1) ?? null;
 
+  // Карточки с Авито Доставкой рисуют цену без data-marker: «193 ₽», зачёркнутое «200 ₽», «-7 ₽ бонусами».
+  // Берём элементы, чей текст — только сумма в рублях: первая — цена, вторая — старая цена.
+  const rubleAmounts = (el: Element) =>
+    [...el.querySelectorAll("*")]
+      .filter((e) => ![...e.children].some((c) => c.textContent?.includes("₽")))
+      .map((e) => text(e) ?? "")
+      .filter((t) => /^(от )?\d[\d\s]*₽$/.test(t));
+
   const items = [...doc.querySelectorAll('[data-marker="item"]')].map((el): SearchItem => {
     const link = el.querySelector('[data-marker="item-title"]');
     const images = [...el.querySelectorAll('[data-marker^="slider-image/image-"]')].map((li) =>
@@ -35,12 +43,14 @@ export function parseSearchPage(doc: Document): SearchPage {
     const seller = el.querySelector('[data-marker="seller-info"]');
     const img = el.querySelector("img");
     const href = link?.getAttribute("href");
+    const priceText = text(el.querySelector('[data-marker="item-price"]'));
+    const amounts = priceText ? [] : rubleAmounts(el);
     return {
       id: el.getAttribute("data-item-id"),
       title: link?.getAttribute("title") ?? text(link),
-      price: num(el.querySelector('meta[itemprop="price"]')?.getAttribute("content")),
-      price_text: text(el.querySelector('[data-marker="item-price"]')),
-      old_price: num(text(el.querySelector('[data-marker="old-price-value"]'))),
+      price: num(el.querySelector('meta[itemprop="price"]')?.getAttribute("content")) ?? num(amounts[0]),
+      price_text: priceText ?? amounts[0] ?? null,
+      old_price: num(text(el.querySelector('[data-marker="old-price-value"]'))) ?? num(amounts[1]),
       discount: text(el.querySelector('[data-marker="discount-value"]')),
       location: text(el.querySelector('[data-marker="item-location"]')),
       date: text(el.querySelector('[data-marker="item-date"]')),
